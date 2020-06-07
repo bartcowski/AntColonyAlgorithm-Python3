@@ -34,6 +34,8 @@ def main():
     # TEST
     print(graph_vertices)
     print(graph_edges)
+    print(get_city_coords('LosAngeles'))
+    print(calc_edge_length('LosAngeles', 'LasVegas'))
     # TEST
 
     done = False
@@ -91,7 +93,6 @@ def draw_graph(screen):
         pygame.draw.circle(screen, GRAPH_COLOR, (int(graph_vertices[i + 1]), int(graph_vertices[i + 2])), NODE_RADIUS, 0)
         i += 3
 
-    i = 0
     e = 0
     source_coord = (0, 0)
     target_coord = (0, 0)
@@ -109,18 +110,25 @@ def draw_graph(screen):
 
 def calc_edge_length(source_city, target_city):
     global graph_vertices
-    source_coord = 0
-    target_coord = 0
+    source_coord = get_city_coords(source_city)
+    target_coord = get_city_coords(target_city)
+
+    return math.sqrt(((target_coord[0] - source_coord[0]) ** 2) + ((target_coord[1] - source_coord[1]) ** 2))
+
+
+def get_city_coords(city):
+    global graph_vertices
+    x = (0, 0)
+    y = (0, 0)
 
     i = 0
     while i < len(graph_vertices):
-        if graph_vertices[i] == source_city:
-            source_coord = (graph_vertices[i + 1], graph_vertices[i + 2])
-        elif graph_vertices[i] == target_city:
-            target_coord = (graph_vertices[i + 1], graph_vertices[i + 2])
+        if graph_vertices[i] == city:
+            x = graph_vertices[i + 1]
+            y = graph_vertices[i + 2]
         i += 3
 
-    return math.sqrt(((target_coord[0] - source_coord[0]) ** 2) + ((target_coord[1] - source_coord[1]) ** 2))
+    return x, y
 
 
 def move_ant(source_city, target_city):
