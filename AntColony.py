@@ -1,5 +1,6 @@
-import pygame
 import math
+import pygame
+import pygame.mixer
 import xml.etree.ElementTree as ET
 
 WIN_H = 900
@@ -15,12 +16,18 @@ XML_FILE = 'usca.xml'
 graph_vertices = []
 graph_edges = []
 
+# TEST
+done_drawing = False
+
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIN_W, WIN_H))
     pygame.display.set_caption("Ant Colony Algorithm")
     screen.fill(BG_COLOR)
+
+    clock = pygame.time.Clock()
+    fps_limit = 30
 
     global graph_vertices
     global graph_edges
@@ -38,12 +45,22 @@ def main():
     print(calc_edge_length('LosAngeles', 'LasVegas'))
     # TEST
 
+    ants_population_paths = [['Vancouver', 'Seattle', 'Portland', 'SaltLakeCity'],
+                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
+                             ['Miami', 'Tampa', 'Charlotte', 'Nashville', 'Memphis'],
+                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis']]
+
     done = False
     while not done:
+        clock.tick(fps_limit)
 
         screen.fill(BG_COLOR)
         draw_graph(screen)
         pygame.display.flip()
+
+        global done_drawing
+        if not done_drawing:
+            move_ants(ants_population_paths, screen)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -57,7 +74,7 @@ def get_vertices_from_xml(file_name):
     root = tree.getroot()
     global graph_vertices
 
-    # draw nodes...
+    # get nodes...
     nodes = root[0][0]
     for node in nodes:
         # ugly calculations to increase space between nodes and allow them to
@@ -65,9 +82,9 @@ def get_vertices_from_xml(file_name):
         x = int(float(node[0][0].text) + 150.0)
         x *= 25.0
         x -= 600.0
-        y = int(float(node[0][1].text))
+        y = int(WIN_H - float(node[0][1].text))
         y *= 30.0
-        y -= 700.0
+        y -= 25370.0
 
         # graph_data stored in one list as city-x-y-city-x-y-...
         graph_vertices.append(node.attrib['id'])
@@ -131,9 +148,28 @@ def get_city_coords(city):
     return x, y
 
 
-def move_ant(source_city, target_city):
-    a = 0
-    # TODO
+# gets a list of paths (path = consecutive names of cities to visit)
+# for every ant in the population to animate
+def move_ants(ants_population_paths, screen):
+    for ant_path in ants_population_paths:
+        for i in range(len(ant_path) - 1):
+            source_city = get_city_coords(ant_path[i])
+            target_city = get_city_coords(ant_path[i + 1])
+            dx = (target_city[0] - source_city[0]) / calc_edge_length(ant_path[i], ant_path[i + 1]) * 5
+            dy = (target_city[1] - source_city[1]) / calc_edge_length(ant_path[i], ant_path[i + 1]) * 5
+            x = source_city[0]
+            y = source_city[1]
+
+            while abs(x - target_city[0]) > 3.0 or abs(y - target_city[1]) > 3.0:
+                screen.fill(BG_COLOR)
+                draw_graph(screen)
+                pygame.draw.circle(screen, ANT_COLOR, (int(x), int(y)), NODE_RADIUS, 0)
+                x = x + dx
+                y = y + dy
+                pygame.display.flip()
+
+    global done_drawing
+    done_drawing = True
 
 
 if __name__ == "__main__":
