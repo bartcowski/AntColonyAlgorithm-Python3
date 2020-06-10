@@ -1,6 +1,7 @@
 import math
 import pygame
 import pygame.mixer
+import time
 import xml.etree.ElementTree as ET
 
 WIN_H = 900
@@ -151,6 +152,9 @@ def get_city_coords(city):
 # gets a list of paths (path = consecutive names of cities to visit)
 # for every ant in the population to animate
 def move_ants(ants_population_paths, screen):
+    time.sleep(1)
+    counter = 1
+
     for ant_path in ants_population_paths:
         for i in range(len(ant_path) - 1):
             source_city = get_city_coords(ant_path[i])
@@ -160,7 +164,8 @@ def move_ants(ants_population_paths, screen):
             x = source_city[0]
             y = source_city[1]
 
-            while abs(x - target_city[0]) > 3.0 or abs(y - target_city[1]) > 3.0:
+            # while abs(x - target_city[0]) > 3.0 or abs(y - target_city[1]) > 3.0:
+            if abs(x - target_city[0]) > 3.0 or abs(y - target_city[1]) > 3.0:
                 screen.fill(BG_COLOR)
                 draw_graph(screen)
                 pygame.draw.circle(screen, ANT_COLOR, (int(x), int(y)), NODE_RADIUS, 0)
