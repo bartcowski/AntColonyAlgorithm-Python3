@@ -10,6 +10,7 @@ WIN_W = 1400
 BG_COLOR = (204, 255, 204)
 GRAPH_COLOR = (0, 0, 0)
 NODE_RADIUS = 10
+ANT_RADIUS = 5
 EDGE_WIDTH = 2
 ANT_COLOR = (204, 0, 0)
 
@@ -44,7 +45,6 @@ def main():
     print(graph_edges)
     print(get_city_coords('LosAngeles'))
     print(calc_edge_length('LosAngeles', 'LasVegas'))
-    # TEST
 
     ants_population_paths = [['Vancouver', 'Seattle', 'Portland', 'SaltLakeCity'],
                              ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
@@ -58,7 +58,18 @@ def main():
                              ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
                              ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
                              ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
-                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis']]
+                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
+                             ['Phoenix', 'ElPaso', 'Dallas', 'Denver', 'KansasCity'],
+                             ['Phoenix', 'ElPaso', 'Dallas', 'Denver', 'KansasCity'],
+                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC'],
+                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC'],
+                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC'],
+                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC'],
+                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC']]
+
+    gp = get_grouped_paths(ants_population_paths)
+    print(gp)
+    # TEST
 
     done = False
     while not done:
@@ -158,6 +169,23 @@ def get_city_coords(city):
     return x, y
 
 
+def get_grouped_paths(ants_population_paths):
+    grouped_paths = []   # containing tuples of (path, number of those paths found in ants_population_paths)
+
+    for ant_path in ants_population_paths:
+        in_list = False
+        for path in grouped_paths:
+            if ant_path == path[0]:
+                new_size = path[1] + 1
+                grouped_paths.remove((path[0], path[1]))
+                grouped_paths.append((ant_path, new_size))
+                in_list = True
+                break
+        if not in_list:
+            grouped_paths.append((ant_path, 1))
+    return grouped_paths
+
+
 def move_ants(ants_population_paths, screen):
     time.sleep(1)
     global done_drawing
@@ -165,18 +193,20 @@ def move_ants(ants_population_paths, screen):
     ants = []
     city_index = 0  # which city is the current source_city
 
+    grouped_paths = get_grouped_paths(ants_population_paths)
     while True:
         # create one ant for every path - it travels ONE edge and gets deleted
         # another set of Ant objects needs to be created for the next one
-        for ant_path in ants_population_paths:
-            if city_index < len(ant_path) - 1:
-                source_city = get_city_coords(ant_path[city_index])
-                target_city = get_city_coords(ant_path[city_index + 1])
+        for ant_path in grouped_paths:
+            if city_index < len(ant_path[0]) - 1:
+                source_city = get_city_coords(ant_path[0][city_index])
+                target_city = get_city_coords(ant_path[0][city_index + 1])
                 x = source_city[0]
                 y = source_city[1]
                 dx = (target_city[0] - source_city[0]) / ticks_per_edge
                 dy = (target_city[1] - source_city[1]) / ticks_per_edge
-                ants.append(Ant(x, y, dx, dy))
+                size = ANT_RADIUS + ant_path[1]
+                ants.append(Ant(x, y, dx, dy, size))
 
         # if no ants were created then all movement is finished
         if not ants:
@@ -187,7 +217,7 @@ def move_ants(ants_population_paths, screen):
             screen.fill(BG_COLOR)
             draw_graph(screen)
             for ant in ants:
-                pygame.draw.circle(screen, ANT_COLOR, (int(ant.x), int(ant.y)), NODE_RADIUS, 0)
+                pygame.draw.circle(screen, ANT_COLOR, (int(ant.x), int(ant.y)), ant.size, 0)
                 ant.update_xy()
             pygame.display.flip()
             counter += 1
