@@ -3,6 +3,7 @@ import pygame
 import pygame.mixer
 import time
 import xml.etree.ElementTree as ET
+from Ant import Ant
 
 WIN_H = 900
 WIN_W = 1400
@@ -14,7 +15,7 @@ ANT_COLOR = (204, 0, 0)
 
 XML_FILE = 'usca.xml'
 
-graph_vertices = []
+graph_vertices = []     # would work better as dictionary (TODO)
 graph_edges = []
 
 # TEST
@@ -33,7 +34,6 @@ def main():
     global graph_vertices
     global graph_edges
 
-    # graph_data = get_and_draw_graph_from_xml('usca.xml', screen)
     get_vertices_from_xml(XML_FILE)
     get_edges_from_xml(XML_FILE)
     draw_graph(screen)
@@ -49,6 +49,15 @@ def main():
     ants_population_paths = [['Vancouver', 'Seattle', 'Portland', 'SaltLakeCity'],
                              ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
                              ['Miami', 'Tampa', 'Charlotte', 'Nashville', 'Memphis'],
+                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
+                             ['Phoenix', 'ElPaso', 'Dallas', 'Denver', 'KansasCity'],
+                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC'],
+                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
+                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
+                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
+                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
+                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
+                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
                              ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis']]
 
     done = False
@@ -149,31 +158,43 @@ def get_city_coords(city):
     return x, y
 
 
-# gets a list of paths (path = consecutive names of cities to visit)
-# for every ant in the population to animate
 def move_ants(ants_population_paths, screen):
     time.sleep(1)
-    counter = 1
-
-    for ant_path in ants_population_paths:
-        for i in range(len(ant_path) - 1):
-            source_city = get_city_coords(ant_path[i])
-            target_city = get_city_coords(ant_path[i + 1])
-            dx = (target_city[0] - source_city[0]) / calc_edge_length(ant_path[i], ant_path[i + 1]) * 5
-            dy = (target_city[1] - source_city[1]) / calc_edge_length(ant_path[i], ant_path[i + 1]) * 5
-            x = source_city[0]
-            y = source_city[1]
-
-            # while abs(x - target_city[0]) > 3.0 or abs(y - target_city[1]) > 3.0:
-            if abs(x - target_city[0]) > 3.0 or abs(y - target_city[1]) > 3.0:
-                screen.fill(BG_COLOR)
-                draw_graph(screen)
-                pygame.draw.circle(screen, ANT_COLOR, (int(x), int(y)), NODE_RADIUS, 0)
-                x = x + dx
-                y = y + dy
-                pygame.display.flip()
-
     global done_drawing
+    ticks_per_edge = 100
+    ants = []
+    city_index = 0  # which city is the current source_city
+
+    while True:
+        # create one ant for every path - it travels ONE edge and gets deleted
+        # another set of Ant objects needs to be created for the next one
+        for ant_path in ants_population_paths:
+            if city_index < len(ant_path) - 1:
+                source_city = get_city_coords(ant_path[city_index])
+                target_city = get_city_coords(ant_path[city_index + 1])
+                x = source_city[0]
+                y = source_city[1]
+                dx = (target_city[0] - source_city[0]) / ticks_per_edge
+                dy = (target_city[1] - source_city[1]) / ticks_per_edge
+                ants.append(Ant(x, y, dx, dy))
+
+        # if no ants were created then all movement is finished
+        if not ants:
+            break
+
+        counter = 0
+        while counter < ticks_per_edge:
+            screen.fill(BG_COLOR)
+            draw_graph(screen)
+            for ant in ants:
+                pygame.draw.circle(screen, ANT_COLOR, (int(ant.x), int(ant.y)), NODE_RADIUS, 0)
+                ant.update_xy()
+            pygame.display.flip()
+            counter += 1
+
+        city_index += 1
+        ants.clear()
+
     done_drawing = True
 
 
