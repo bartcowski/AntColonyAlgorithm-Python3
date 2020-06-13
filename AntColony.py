@@ -4,6 +4,7 @@ import pygame.mixer
 import time
 import xml.etree.ElementTree as ET
 from Ant import Ant
+from AntColonyAlgorithm import AntColonyAlgorithm
 
 WIN_H = 900
 WIN_W = 1400
