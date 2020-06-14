@@ -5,6 +5,9 @@ import time
 import xml.etree.ElementTree as ET
 from Ant import Ant
 from AntColonyAlgorithm import AntColonyAlgorithm
+from DataParsing import get_network_distances, get_network_node_dictionary, reverse_dictionary, translate_path_names
+import numpy as np
+
 
 WIN_H = 900
 WIN_W = 1400
@@ -68,21 +71,29 @@ def main():
                              ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC'],
                              ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC']]
 
+    distances = get_network_distances('usca.xml')
+    dictionary = get_network_node_dictionary('usca.xml')
+    ant_colony = AntColonyAlgorithm(distances, 15, 5, 100, 0.4, start = 'Vancouver', stop = 'Miami', names = dictionary, q0_exploration = 0.6, alpha=1, beta=1)
+    ant_colony.run()
+    drawable_paths = ant_colony.get_drawable_paths()
+
     gp = get_grouped_paths(ants_population_paths)
     print(gp)
     # TEST
 
     done = False
     while not done:
+        
         clock.tick(fps_limit)
 
         screen.fill(BG_COLOR)
         draw_graph(screen)
         pygame.display.flip()
-
-        global done_drawing
-        if not done_drawing:
-            move_ants(ants_population_paths, screen)
+        for ants_population_paths in drawable_paths:
+            global done_drawing
+            if not done_drawing:
+                move_ants(ants_population_paths, screen)
+            done_drawing = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

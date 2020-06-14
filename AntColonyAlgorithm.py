@@ -1,6 +1,7 @@
 import random as rn
 import numpy as np
 from random import random
+from DataParsing import reverse_dictionary
 
 class AntColonyAlgorithm(object):
 
@@ -29,18 +30,22 @@ class AntColonyAlgorithm(object):
         self.beta = beta
         self.start = names[start]
         self.stop = names[stop]
+        self.names = names
         self.q0_exploration = q0_exploration
+        self.shortest_path = None
+        self.all_generated_paths = []
 
     def run(self):
         shortest_path = None
         all_time_shortest_path = ("placeholder", np.inf)
         for i in range(self.n_iterations):
             all_paths = self.gen_all_paths(self.start, self.stop)
+            self.all_generated_paths.append(all_paths)
             finished_paths = []
             for path in all_paths:
                 if self.stop == path[0][len(path[0])-1][1]:
                     finished_paths.append(path)
-            self.spread_pheronome(all_paths, self.n_best, shortest_path=shortest_path)
+            self.spread_pheronome(finished_paths, self.n_best, shortest_path=shortest_path)
             if len(finished_paths) > 0:
                 shortest_path = min(finished_paths, key=lambda x: x[1])
                 print ("Shortest path in iteration ",i+1," : ",shortest_path)
@@ -48,9 +53,26 @@ class AntColonyAlgorithm(object):
                     all_time_shortest_path = shortest_path
             else:
                 print ("No path reaches end in iteration ",i)
-            self.pheromone * self.pheromone_vaporization            
-        return all_time_shortest_path
+            self.pheromone * self.pheromone_vaporization
+        print ("Shortest path: ",all_time_shortest_path)
+        self.shortest_path = all_time_shortest_path
 
+    def translate_path_into_drawable(self, path, rev_dictionary):
+        translated_path = []
+        for tuple in path[0]:
+            translated_path.append(rev_dictionary[tuple[0]])
+        return translated_path
+    
+    def get_drawable_paths(self):
+        drawable_paths = []
+        rev_dictionary = reverse_dictionary(self.names)
+        for iteration_paths in self.all_generated_paths:
+            drawable_iteration = []
+            for path in iteration_paths:
+                drawable_iteration.append(self.translate_path_into_drawable(path, rev_dictionary))
+            drawable_paths.append(drawable_iteration)
+        return drawable_paths
+    
     def spread_pheronome(self, all_paths, n_best, shortest_path):
         sorted_paths = sorted(all_paths, key=lambda x: x[1])
         for path, dist in sorted_paths[:n_best]:
