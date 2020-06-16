@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 import numpy as np
 
+
 def get_network_distances(filename):
     tree = ET.parse(filename)
     root = tree.getroot()
@@ -18,6 +19,7 @@ def get_network_distances(filename):
         distances_array[nam_dict[start]][nam_dict[end]] = distance
     return distances_array
 
+
 def get_network_node_dictionary(filename):
     tree = ET.parse(filename)
     root = tree.getroot()
@@ -26,12 +28,14 @@ def get_network_node_dictionary(filename):
     names_dict = {}
     for node in nodes:
         names_dict[node.attrib['id']] = i
-        i+=1
+        i += 1
     return names_dict
+
 
 def reverse_dictionary(dictionary):
     rev_dictionary = {v: k for k, v in dictionary.items()}
     return rev_dictionary
+
 
 def translate_path_names(path, rev_dictionary):
     translated_path = ([], path[1])

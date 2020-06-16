@@ -4,7 +4,7 @@ class Ant:
         self.y = y
         self.dx = dx
         self.dy = dy
-        self.size = 2 * size
+        self.size = size
 
     def update_xy(self):
         self.x += self.dx

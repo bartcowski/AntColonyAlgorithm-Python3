@@ -23,8 +23,7 @@ XML_FILE = 'usca.xml'
 graph_vertices = []     # would work better as dictionary (TODO)
 graph_edges = []
 
-# TEST
-done_drawing = False
+done_drawing = False    # prevents from drawing everything again
 
 
 def main():
@@ -44,56 +43,35 @@ def main():
     draw_graph(screen)
     pygame.display.flip()
 
-    # TEST
-    print(graph_vertices)
-    print(graph_edges)
-    print(get_city_coords('LosAngeles'))
-    print(calc_edge_length('LosAngeles', 'LasVegas'))
-
-    ants_population_paths = [['Vancouver', 'Seattle', 'Portland', 'SaltLakeCity'],
-                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
-                             ['Miami', 'Tampa', 'Charlotte', 'Nashville', 'Memphis'],
-                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
-                             ['Phoenix', 'ElPaso', 'Dallas', 'Denver', 'KansasCity'],
-                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC'],
-                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
-                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
-                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
-                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
-                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
-                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
-                             ['SanDiego', 'Phoenix', 'LasVegas', 'SaltLakeCity', 'Calgary', 'Winnipeg', 'Minneapolis'],
-                             ['Phoenix', 'ElPaso', 'Dallas', 'Denver', 'KansasCity'],
-                             ['Phoenix', 'ElPaso', 'Dallas', 'Denver', 'KansasCity'],
-                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC'],
-                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC'],
-                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC'],
-                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC'],
-                             ['Toronto', 'Montreal', 'Boston', 'NewYork', 'Philadelphia', 'WashingtonDC']]
-
+    no_of_ants = 50
+    n_best = 10
+    n_iterations = 100
+    pheromone_vaporization = 0.7
     distances = get_network_distances('usca.xml')
     dictionary = get_network_node_dictionary('usca.xml')
-    ant_colony = AntColonyAlgorithm(distances, 15, 5, 100, 0.4, start = 'Vancouver', stop = 'Miami', names = dictionary, q0_exploration = 0.6, alpha=1, beta=1)
+    ant_colony = AntColonyAlgorithm(distances, no_of_ants, n_best, n_iterations, pheromone_vaporization,
+                                    start='Vancouver', stop='NewYork', names=dictionary,
+                                    q0_exploration=0.95, alpha=1, beta=0.0001)
     ant_colony.run()
     drawable_paths = ant_colony.get_drawable_paths()
 
-    gp = get_grouped_paths(ants_population_paths)
-    print(gp)
-    # TEST
-
     done = False
     while not done:
-        
+        global done_drawing
         clock.tick(fps_limit)
 
         screen.fill(BG_COLOR)
         draw_graph(screen)
         pygame.display.flip()
-        for ants_population_paths in drawable_paths:
-            global done_drawing
-            if not done_drawing:
-                move_ants(ants_population_paths, screen)
-            done_drawing = False
+
+        if not done_drawing:
+            population_counter = 0  # used to draw only some populations for faster visualisation of progress
+            for ants_population in drawable_paths:
+                if population_counter % 5 == 0:
+                    move_ants(ants_population, screen)
+                population_counter += 1
+
+        done_drawing = True
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -201,7 +179,7 @@ def get_grouped_paths(ants_population_paths):
 def move_ants(ants_population_paths, screen):
     time.sleep(1)
     global done_drawing
-    ticks_per_edge = 100
+    ticks_per_edge = 50
     ants = []
     city_index = 0  # which city is the current source_city
 
