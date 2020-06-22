@@ -61,6 +61,7 @@ class AntColonyAlgorithm(object):
                 if self.stop == path[0][len(path[0])-1][1]:
                     finished_paths.append(path)
 
+            # determining n-best paths
             finished_paths_copy = sorted(finished_paths.copy(), key=lambda x: x[1])
             fpc = []
             for path in finished_paths_copy:
@@ -80,7 +81,7 @@ class AntColonyAlgorithm(object):
                 print("No path reaches end in iteration ", i)
             self.pheromone = self.pheromone * self.pheromone_vaporization
 
-        # subtract non-algorithm related times
+        # execution results
         execution_time = int(round(time.time() * 1000)) - start_time
 
         print("Shortest path: ", all_time_shortest_path)
