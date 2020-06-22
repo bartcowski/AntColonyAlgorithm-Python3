@@ -43,13 +43,14 @@ def main():
     draw_graph(screen)
     pygame.display.flip()
 
+    n = 5
     no_of_ants = 50
     n_best = 10
     n_iterations = 100
     pheromone_vaporization = 0.7
     distances = get_network_distances('usca.xml')
     dictionary = get_network_node_dictionary('usca.xml')
-    ant_colony = AntColonyAlgorithm(distances, no_of_ants, n_best, n_iterations, pheromone_vaporization,
+    ant_colony = AntColonyAlgorithm(n, distances, no_of_ants, n_best, n_iterations, pheromone_vaporization,
                                     start='Vancouver', stop='NewYork', names=dictionary,
                                     q0_exploration=0.95, alpha=1, beta=0.0001)
     ant_colony.run()
